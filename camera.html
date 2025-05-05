@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Camera App with Save Feature</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .smartphone {
+      width: 300px;
+      height: 600px;
+      background-color: #333;
+      border-radius: 30px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .home-screen {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #3b5998, #8b9dc3);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      padding: 30px;
+      position: relative;
+    }
+
+    .app-icon {
+      width: 70px;
+      height: 70px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .app-icon img {
+      width: 50%;
+      height: 50%;
+    }
+
+    .app-icon:hover {
+      transform: scale(1.2);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #camera-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #camera-view video {
+      width: 90%;
+      height: auto;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    #camera-view button {
+      margin-top: 20px;
+      background-color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: background-color 0.3s ease;
+    }
+
+    #camera-view button:hover {
+      background-color: #ddd;
+    }
+
+    #close-camera {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <div class="smartphone">
+    <div class="home-screen">
+      <div class="app-icon" id="camera-app" title="Camera">
+        <img src="https://cdn-icons-png.flaticon.com/512/685/685655.png" alt="Camera">
+      </div>
+    </div>
+    <div id="camera-view">
+      <video id="video" autoplay></video>
+      <button id="save-photo">Take Photo</button>
+      <button id="close-camera">&times;</button>
+      <canvas id="canvas" style="display:none;"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const cameraApp = document.getElementById('camera-app');
+    const cameraView = document.getElementById('camera-view');
+    const video = document.getElementById('video');
+    const closeCamera = document.getElementById('close-camera');
+    const savePhoto = document.getElementById('save-photo');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Open the camera
+    cameraApp.addEventListener('mouseover', async () => {
+      cameraView.style.display = 'flex';
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        alert('Unable to access the camera: ' + err.message);
+      }
+    });
+
+    // Close the camera
+    closeCamera.addEventListener('click', () => {
+      cameraView.style.display = 'none';
+      const stream = video.srcObject;
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop()); // Stop the camera
+      video.srcObject = null;
+    });
+
+    // Take a photo and save it
+    savePhoto.addEventListener('click', () => {
+      // Set canvas size to video size
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the video frame to the canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Create an image from the canvas
+      const imageUrl = canvas.toDataURL('image/png');
+
+      // Create a link to download the image
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = 'photo.png';
+      link.click();
+    });
+  </script>
+</body>
+</html>
